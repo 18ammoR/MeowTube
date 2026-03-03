@@ -1,4 +1,4 @@
-# MeowTube
+# MeowTube - A YouTube Clone 
 
 Members; 
 Romma A. Perez - C-23-11310 
