@@ -18,7 +18,7 @@ app.get("/api/health", (req, res) => res.json({ ok: true }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/videos", videoRoutes);
-app.use("/api", commentRoutes); // includes /videos/:id/comments and /comments/:id
+app.use("/api", commentRoutes); // /videos/:id/comments and /comments/:id
 app.use("/api/users", userRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/history", historyRoutes);

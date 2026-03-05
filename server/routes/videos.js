@@ -5,132 +5,148 @@ const { extractYouTubeId, thumbnailFromId } = require("../utils/youtube");
 
 const router = express.Router();
 
-function requireOwner(req, res, next) {
-  const { id } = req.params;
-  videosDB.findOne({ _id: id }, (err, video) => {
-    if (err) return res.status(500).json({ error: "DB error" });
+async function requireOwner(req, res, next) {
+  try {
+    const { id } = req.params;
+    const video = await videosDB.findOne({ _id: id });
+
     if (!video) return res.status(404).json({ error: "Video not found" });
     if (video.userId !== req.user.id)
       return res.status(403).json({ error: "Not owner" });
+
     req.video = video;
     next();
-  });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "DB error" });
+  }
 }
 
 // GET all videos (search/filter)
-router.get("/", (req, res) => {
-  const { search = "", category = "" } = req.query;
+router.get("/", async (req, res) => {
+  try {
+    const { search = "", category = "" } = req.query;
 
-  const query = {};
-  if (category) query.category = category;
+    const query = {};
+    if (category) query.category = category;
 
-  videosDB.find(query).sort({ createdAt: -1 }).exec((err, videos) => {
-    if (err) return res.status(500).json({ error: "DB error" });
+    let videos = await videosDB.find(query);
+    videos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
-    let result = videos;
     if (search) {
       const s = String(search).toLowerCase();
-      result = result.filter((v) => String(v.title || "").toLowerCase().includes(s));
+      videos = videos.filter((v) =>
+        String(v.title || "").toLowerCase().includes(s)
+      );
     }
 
-    // Attach uploader name (simple approach: 1-by-1; OK for NeDB class projects)
-    const ids = [...new Set(result.map((v) => v.userId))];
-    usersDB.find({ _id: { $in: ids } }, (uErr, users) => {
-      if (uErr) return res.status(500).json({ error: "DB error" });
-      const map = new Map(users.map((u) => [u._id, u.username]));
-      res.json(
-        result.map((v) => ({
-          ...v,
-          uploaderName: map.get(v.userId) || "Unknown",
-          likeCount: (v.likes || []).length,
-          dislikeCount: (v.dislikes || []).length,
-        }))
-      );
-    });
-  });
+    const ids = [...new Set(videos.map((v) => v.userId).filter(Boolean))];
+    const users = ids.length ? await usersDB.find({ _id: { $in: ids } }) : [];
+    const map = new Map(users.map((u) => [u._id, u.username]));
+
+    res.json(
+      videos.map((v) => ({
+        ...v,
+        uploaderName: map.get(v.userId) || "Unknown",
+        likeCount: (v.likes || []).length,
+        dislikeCount: (v.dislikes || []).length,
+      }))
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "DB error" });
+  }
 });
 
 // GET single video
-router.get("/:id", (req, res) => {
-  videosDB.findOne({ _id: req.params.id }, (err, video) => {
-    if (err) return res.status(500).json({ error: "DB error" });
+router.get("/:id", async (req, res) => {
+  try {
+    const video = await videosDB.findOne({ _id: req.params.id });
     if (!video) return res.status(404).json({ error: "Video not found" });
 
-    usersDB.findOne({ _id: video.userId }, (uErr, user) => {
-      if (uErr) return res.status(500).json({ error: "DB error" });
-      res.json({
-        ...video,
-        uploaderName: user?.username || "Unknown",
-        likeCount: (video.likes || []).length,
-        dislikeCount: (video.dislikes || []).length,
-      });
+    const user = await usersDB.findOne({ _id: video.userId });
+
+    res.json({
+      ...video,
+      uploaderName: user?.username || "Unknown",
+      likeCount: (video.likes || []).length,
+      dislikeCount: (video.dislikes || []).length,
     });
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "DB error" });
+  }
 });
 
 // POST create video (auth)
-router.post("/", auth, (req, res) => {
-  const { youtubeUrl, title, description = "", category = "" } = req.body || {};
-  if (!youtubeUrl || !title)
-    return res.status(400).json({ error: "youtubeUrl and title required" });
+router.post("/", auth, async (req, res) => {
+  try {
+    const { youtubeUrl, title, description = "", category = "" } = req.body || {};
+    if (!youtubeUrl || !title)
+      return res.status(400).json({ error: "youtubeUrl and title required" });
 
-  const videoId = extractYouTubeId(youtubeUrl);
-  if (!videoId) return res.status(400).json({ error: "Invalid YouTube URL" });
+    const videoId = extractYouTubeId(youtubeUrl);
+    if (!videoId) return res.status(400).json({ error: "Invalid YouTube URL" });
 
-  const doc = {
-    userId: req.user.id,
-    title,
-    description,
-    youtubeUrl,
-    videoId,
-    thumbnail: thumbnailFromId(videoId),
-    category,
-    views: 0,
-    likes: [],
-    dislikes: [],
-    createdAt: Date.now(),
-  };
+    const doc = {
+      userId: req.user.id,
+      title,
+      description,
+      youtubeUrl,
+      videoId,
+      thumbnail: thumbnailFromId(videoId),
+      category,
+      views: 0,
+      likes: [],
+      dislikes: [],
+      createdAt: Date.now(),
+    };
 
-  videosDB.insert(doc, (err, video) => {
-    if (err) return res.status(500).json({ error: "DB insert error" });
+    const video = await videosDB.insert(doc);
     res.status(201).json(video);
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "DB insert error" });
+  }
 });
 
 // PUT update video (owner)
-router.put("/:id", auth, requireOwner, (req, res) => {
-  const { title, description, category } = req.body || {};
-  const updates = {};
-  if (title !== undefined) updates.title = title;
-  if (description !== undefined) updates.description = description;
-  if (category !== undefined) updates.category = category;
+router.put("/:id", auth, requireOwner, async (req, res) => {
+  try {
+    const { title, description, category } = req.body || {};
+    const updates = {};
+    if (title !== undefined) updates.title = title;
+    if (description !== undefined) updates.description = description;
+    if (category !== undefined) updates.category = category;
 
-  videosDB.update({ _id: req.params.id }, { $set: updates }, {}, (err) => {
-    if (err) return res.status(500).json({ error: "DB update error" });
-    videosDB.findOne({ _id: req.params.id }, (e2, updated) => {
-      if (e2) return res.status(500).json({ error: "DB error" });
-      res.json(updated);
-    });
-  });
+    await videosDB.update({ _id: req.params.id }, { $set: updates });
+    const updated = await videosDB.findOne({ _id: req.params.id });
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "DB update error" });
+  }
 });
 
 // DELETE video (owner)
-router.delete("/:id", auth, requireOwner, (req, res) => {
-  videosDB.remove({ _id: req.params.id }, {}, (err, n) => {
-    if (err) return res.status(500).json({ error: "DB remove error" });
+router.delete("/:id", auth, requireOwner, async (req, res) => {
+  try {
+    const n = await videosDB.remove({ _id: req.params.id }, { multi: false });
     res.json({ deleted: n });
-  });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "DB remove error" });
+  }
 });
 
 // POST like/dislike toggle (auth)
-// body: { action: "like" | "dislike" }
-router.post("/:id/like", auth, (req, res) => {
-  const { action } = req.body || {};
-  if (!["like", "dislike"].includes(action))
-    return res.status(400).json({ error: "action must be like or dislike" });
+router.post("/:id/like", auth, async (req, res) => {
+  try {
+    const { action } = req.body || {};
+    if (!["like", "dislike"].includes(action))
+      return res.status(400).json({ error: "action must be like or dislike" });
 
-  videosDB.findOne({ _id: req.params.id }, (err, video) => {
-    if (err) return res.status(500).json({ error: "DB error" });
+    const video = await videosDB.findOne({ _id: req.params.id });
     if (!video) return res.status(404).json({ error: "Video not found" });
 
     const uid = req.user.id;
@@ -147,28 +163,29 @@ router.post("/:id/like", auth, (req, res) => {
       likes.delete(uid);
     }
 
-    videosDB.update(
+    await videosDB.update(
       { _id: video._id },
-      { $set: { likes: [...likes], dislikes: [...dislikes] } },
-      {},
-      (uErr) => {
-        if (uErr) return res.status(500).json({ error: "DB update error" });
-        res.json({ likeCount: likes.size, dislikeCount: dislikes.size });
-      }
+      { $set: { likes: [...likes], dislikes: [...dislikes] } }
     );
-  });
+
+    res.json({ likeCount: likes.size, dislikeCount: dislikes.size });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "DB update error" });
+  }
 });
 
 // POST increment view count
-router.post("/:id/view", (req, res) => {
-  videosDB.update({ _id: req.params.id }, { $inc: { views: 1 } }, {}, (err) => {
-    if (err) return res.status(500).json({ error: "DB update error" });
-    videosDB.findOne({ _id: req.params.id }, (e2, video) => {
-      if (e2) return res.status(500).json({ error: "DB error" });
-      if (!video) return res.status(404).json({ error: "Video not found" });
-      res.json({ views: video.views });
-    });
-  });
+router.post("/:id/view", async (req, res) => {
+  try {
+    await videosDB.update({ _id: req.params.id }, { $inc: { views: 1 } });
+    const video = await videosDB.findOne({ _id: req.params.id });
+    if (!video) return res.status(404).json({ error: "Video not found" });
+    res.json({ views: video.views });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "DB update error" });
+  }
 });
 
 module.exports = router;

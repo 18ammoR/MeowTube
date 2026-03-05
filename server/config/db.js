@@ -1,12 +1,15 @@
-const Datastore = require("nedb");
 const path = require("path");
 const fs = require("fs");
+const Datastore = require("nedb-promises");
 
 const dataDir = path.join(__dirname, "..", "data");
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
 function makeDB(file) {
-  return new Datastore({ filename: path.join(dataDir, file), autoload: true });
+  return Datastore.create({
+    filename: path.join(dataDir, file),
+    autoload: true,
+  });
 }
 
 module.exports = {

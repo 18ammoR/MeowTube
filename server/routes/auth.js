@@ -6,6 +6,7 @@ const { usersDB } = require("../config/db");
 const router = express.Router();
 
 function signToken(user) {
+  if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is missing in .env");
   return jwt.sign(
     { id: user._id, username: user.username, email: user.email },
     process.env.JWT_SECRET,
@@ -13,43 +14,48 @@ function signToken(user) {
   );
 }
 
-router.post("/register", (req, res) => {
-  const { username, email, password } = req.body || {};
-  if (!username || !email || !password)
-    return res.status(400).json({ error: "username, email, password required" });
+// POST /api/auth/register
+router.post("/register", async (req, res) => {
+  try {
+    const { username, email, password } = req.body || {};
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: "username, email, password required" });
+    }
 
-  usersDB.findOne({ $or: [{ username }, { email }] }, async (err, existing) => {
-    if (err) return res.status(500).json({ error: "DB error" });
+    const existing = await usersDB.findOne({ $or: [{ username }, { email }] });
     if (existing) return res.status(409).json({ error: "User already exists" });
 
     const hashed = await bcrypt.hash(password, 10);
-    const doc = {
+
+    const user = await usersDB.insert({
       username,
       email,
       password: hashed,
       avatar: "default-avatar.png",
       subscribers: 0,
       createdAt: Date.now(),
-    };
-
-    usersDB.insert(doc, (insErr, user) => {
-      if (insErr) return res.status(500).json({ error: "DB insert error" });
-      const token = signToken(user);
-      res.json({
-        token,
-        user: { id: user._id, username: user.username, email: user.email },
-      });
     });
-  });
+
+    const token = signToken(user);
+    res.json({
+      token,
+      user: { id: user._id, username: user.username, email: user.email },
+    });
+  } catch (err) {
+    console.error("REGISTER ERROR:", err);
+    res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
 });
 
-router.post("/login", (req, res) => {
-  const { email, password } = req.body || {};
-  if (!email || !password)
-    return res.status(400).json({ error: "email and password required" });
+// POST /api/auth/login
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+    if (!email || !password) {
+      return res.status(400).json({ error: "email and password required" });
+    }
 
-  usersDB.findOne({ email }, async (err, user) => {
-    if (err) return res.status(500).json({ error: "DB error" });
+    const user = await usersDB.findOne({ email });
     if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
     const ok = await bcrypt.compare(password, user.password);
@@ -60,7 +66,10 @@ router.post("/login", (req, res) => {
       token,
       user: { id: user._id, username: user.username, email: user.email },
     });
-  });
+  } catch (err) {
+    console.error("LOGIN ERROR:", err);
+    res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
 });
 
 module.exports = router;

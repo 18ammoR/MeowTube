@@ -1,0 +1,381 @@
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Box,
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  InputBase,
+  Paper,
+  Grid,
+  Card,
+  CardMedia,
+  CardContent,
+  Avatar,
+  Divider,
+  useMediaQuery,
+  Chip,
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import SearchIcon from "@mui/icons-material/Search";
+import HomeIcon from "@mui/icons-material/Home";
+import WhatshotIcon from "@mui/icons-material/Whatshot";
+import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
+import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
+
+function timeAgo(ts) {
+  if (!ts) return "";
+  const diff = Date.now() - ts;
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d}d ago`;
+  const mo = Math.floor(d / 30);
+  if (mo < 12) return `${mo}mo ago`;
+  const y = Math.floor(mo / 12);
+  return `${y}y ago`;
+}
+
+const P = {
+  bg: "#FFF7FB",
+  surface: "#FFFFFF",
+  surface2: "#FFF0F7",
+  border: "#F6C6DA",
+  text: "#3B2A34",
+  subtext: "#7A5D6B",
+  accent: "#FF7FB0",
+  accent2: "#FFB6D3",
+};
+
+function VideoCard({ video }) {
+  const navigate = useNavigate();
+  return (
+    <Card
+      onClick={() => navigate(`/watch/${video._id}`)}
+      sx={{
+        cursor: "pointer",
+        borderRadius: 3,
+        border: `1px solid ${P.border}`,
+        boxShadow: "0 10px 25px rgba(255, 127, 176, 0.10)",
+        bgcolor: P.surface,
+        overflow: "hidden",
+        transition: "transform 140ms ease, box-shadow 140ms ease",
+        "&:hover": {
+          transform: "translateY(-2px)",
+          boxShadow: "0 14px 30px rgba(255, 127, 176, 0.16)",
+        },
+      }}
+    >
+      <CardMedia
+        component="img"
+        image={video.thumbnail || "https://via.placeholder.com/480x270?text=No+Thumbnail"}
+        alt={video.title}
+        sx={{ aspectRatio: "16/9" }}
+      />
+      <Box sx={{ display: "flex", gap: 1.5, p: 1.6 }}>
+        <Avatar
+          sx={{
+            width: 38,
+            height: 38,
+            bgcolor: P.surface2,
+            color: P.text,
+            border: `1px solid ${P.border}`,
+          }}
+        >
+          {(video.uploaderName || "U")[0]?.toUpperCase?.() || "U"}
+        </Avatar>
+
+        <CardContent sx={{ p: 0, "&:last-child": { pb: 0 } }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 800,
+              lineHeight: 1.2,
+              color: P.text,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {video.title}
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: P.subtext, mt: 0.4 }}>
+            {video.uploaderName || "Unknown"}
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: P.subtext }}>
+            {video.views ?? 0} views • {timeAgo(video.createdAt)}
+          </Typography>
+        </CardContent>
+      </Box>
+    </Card>
+  );
+}
+
+export default function Home() {
+  const isMobile = useMediaQuery("(max-width:900px)");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const [videos, setVideos] = useState([]);
+  const [err, setErr] = useState("");
+
+  const [q, setQ] = useState("");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+
+  const categories = useMemo(
+    () => ["Music", "Gaming", "Education", "News", "Other"],
+    []
+  );
+
+  const sidebarItems = useMemo(
+    () => [
+      { label: "Home", icon: <HomeIcon />, action: () => setCategory("") },
+      { label: "Trending", icon: <WhatshotIcon />, action: () => {} },
+      { label: "Subscriptions", icon: <SubscriptionsIcon />, action: () => {} },
+      { label: "Library", icon: <VideoLibraryIcon />, action: () => {} },
+    ],
+    []
+  );
+
+  async function loadVideos(nextSearch = search, nextCategory = category) {
+    try {
+      setErr("");
+      const params = new URLSearchParams();
+      if (nextSearch) params.set("search", nextSearch);
+      if (nextCategory) params.set("category", nextCategory);
+
+      const res = await axios.get(`/api/videos${params.toString() ? `?${params}` : ""}`);
+      setVideos(res.data);
+    } catch (e) {
+      setErr(e?.response?.data?.error || e?.message || "Failed to load videos");
+    }
+  }
+
+  useEffect(() => {
+    loadVideos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    loadVideos(search, category);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, category]);
+
+  function onSearchSubmit(e) {
+    e.preventDefault();
+    setSearch(q.trim());
+  }
+
+  const drawer = (
+    <Box sx={{ width: 270, bgcolor: P.surface, height: "100%", color: P.text }}>
+      <Box sx={{ px: 2, py: 2 }}>
+        <Typography variant="h6" sx={{ fontWeight: 900 }}>
+          🐱 MeowTube
+        </Typography>
+        <Typography variant="body2" sx={{ color: P.subtext }}>
+          pastel • soft • cozy
+        </Typography>
+      </Box>
+      <Divider sx={{ borderColor: P.border }} />
+
+      <List>
+        {sidebarItems.map((it) => (
+          <ListItemButton
+            key={it.label}
+            onClick={() => {
+              it.action?.();
+              if (isMobile) setDrawerOpen(false);
+            }}
+            sx={{
+              mx: 1,
+              my: 0.4,
+              borderRadius: 3,
+              "&.Mui-selected, &:hover": {
+                bgcolor: P.surface2,
+              },
+            }}
+          >
+            <ListItemIcon sx={{ color: P.accent }}>{it.icon}</ListItemIcon>
+            <ListItemText primary={it.label} />
+          </ListItemButton>
+        ))}
+      </List>
+
+      <Divider sx={{ my: 1, borderColor: P.border }} />
+
+      <Box sx={{ px: 2, pb: 2 }}>
+        <Typography variant="subtitle2" sx={{ color: P.subtext, mb: 1 }}>
+          Categories
+        </Typography>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+          {categories.map((c) => (
+            <Chip
+              key={c}
+              label={c}
+              onClick={() => {
+                setCategory(c);
+                if (isMobile) setDrawerOpen(false);
+              }}
+              variant={category === c ? "filled" : "outlined"}
+              sx={{
+                borderColor: P.border,
+                bgcolor: category === c ? P.accent2 : P.surface,
+                color: P.text,
+                "&:hover": { bgcolor: P.surface2 },
+              }}
+            />
+          ))}
+
+          {category && (
+            <Chip
+              label="Clear"
+              onClick={() => setCategory("")}
+              variant="outlined"
+              sx={{
+                borderColor: P.border,
+                color: P.subtext,
+                "&:hover": { bgcolor: P.surface2 },
+              }}
+            />
+          )}
+        </Box>
+      </Box>
+    </Box>
+  );
+
+  return (
+    <Box sx={{ bgcolor: P.bg, minHeight: "100vh" }}>
+      {/* Top Bar */}
+      <AppBar
+        position="sticky"
+        sx={{
+          bgcolor: "rgba(255, 255, 255, 0.82)",
+          color: P.text,
+          boxShadow: "none",
+          backdropFilter: "blur(10px)",
+          borderBottom: `1px solid ${P.border}`,
+        }}
+      >
+        <Toolbar sx={{ gap: 1.5 }}>
+          <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: P.text }}>
+            <MenuIcon />
+          </IconButton>
+
+          <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+            <Typography variant="h6" sx={{ fontWeight: 900 }}>
+             🐱 MeowTube
+            </Typography>
+          </Link>
+
+          <Box sx={{ flex: 1 }} />
+
+          {/* Search */}
+          <Box component="form" onSubmit={onSearchSubmit} sx={{ width: { xs: "100%", sm: 560 } }}>
+            <Paper
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                px: 1.2,
+                py: 0.3,
+                borderRadius: 999,
+                bgcolor: P.surface,
+                border: `1px solid ${P.border}`,
+                boxShadow: "0 10px 25px rgba(255, 127, 176, 0.10)",
+              }}
+            >
+              <InputBase
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search something cute…"
+                sx={{ ml: 1, flex: 1, color: P.text }}
+              />
+              <IconButton type="submit" sx={{ color: P.accent }}>
+                <SearchIcon />
+              </IconButton>
+            </Paper>
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+      {/* Sidebar */}
+      <Drawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        variant="temporary"
+        PaperProps={{
+          sx: { bgcolor: P.surface, borderRight: `1px solid ${P.border}` },
+        }}
+      >
+        {drawer}
+      </Drawer>
+
+      {/* Content */}
+      <Box sx={{ px: { xs: 2, md: 3 }, py: 3 }}>
+        {err && (
+          <Box
+            sx={{
+              mb: 2,
+              p: 2,
+              border: `1px solid ${P.border}`,
+              borderRadius: 3,
+              bgcolor: P.surface,
+              color: "#C0406D",
+            }}
+          >
+            {err}
+          </Box>
+        )}
+
+        {(search || category) && (
+          <Box sx={{ mb: 2, display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
+            {search && (
+              <Chip
+                label={`Search: ${search}`}
+                onDelete={() => {
+                  setSearch("");
+                  setQ("");
+                }}
+                sx={{ bgcolor: P.surface, border: `1px solid ${P.border}` }}
+              />
+            )}
+            {category && (
+              <Chip
+                label={`Category: ${category}`}
+                onDelete={() => setCategory("")}
+                sx={{ bgcolor: P.surface, border: `1px solid ${P.border}` }}
+              />
+            )}
+          </Box>
+        )}
+
+        <Grid container spacing={2}>
+          {videos.map((v) => (
+            <Grid item key={v._id} xs={12} sm={6} md={4} lg={3}>
+              <VideoCard video={v} />
+            </Grid>
+          ))}
+        </Grid>
+
+        {videos.length === 0 && !err && (
+          <Typography sx={{ color: P.subtext, mt: 2 }}>
+            No videos yet. Upload one and make it cute ✨
+          </Typography>
+        )}
+      </Box>
+    </Box>
+  );
+}
