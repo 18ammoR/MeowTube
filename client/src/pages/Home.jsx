@@ -137,7 +137,7 @@ export default function Home() {
   const [category, setCategory] = useState("");
 
   const categories = useMemo(
-    () => ["Music", "Gaming", "Education", "News", "Other"],
+    () => ["All", "Gaming", "Music", "Genshin Impact", "HTML", "News", "Podcasts", "Pop Rock"],
     []
   );
 
@@ -156,7 +156,7 @@ export default function Home() {
       setErr("");
       const params = new URLSearchParams();
       if (nextSearch) params.set("search", nextSearch);
-      if (nextCategory) params.set("category", nextCategory);
+      if (nextCategory && nextCategory !== "All") params.set("category", nextCategory);
 
       const res = await axios.get(`/api/videos${params.toString() ? `?${params}` : ""}`);
       setVideos(res.data);
@@ -187,7 +187,7 @@ export default function Home() {
           🐱 MeowTube
         </Typography>
         <Typography variant="body2" sx={{ color: P.subtext }}>
-          pastel • soft • cozy
+        
         </Typography>
       </Box>
       <Divider sx={{ borderColor: P.border }} />
@@ -204,9 +204,7 @@ export default function Home() {
               mx: 1,
               my: 0.4,
               borderRadius: 3,
-              "&.Mui-selected, &:hover": {
-                bgcolor: P.surface2,
-              },
+              "&:hover": { bgcolor: P.surface2 },
             }}
           >
             <ListItemIcon sx={{ color: P.accent }}>{it.icon}</ListItemIcon>
@@ -214,46 +212,6 @@ export default function Home() {
           </ListItemButton>
         ))}
       </List>
-
-      <Divider sx={{ my: 1, borderColor: P.border }} />
-
-      <Box sx={{ px: 2, pb: 2 }}>
-        <Typography variant="subtitle2" sx={{ color: P.subtext, mb: 1 }}>
-          Categories
-        </Typography>
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-          {categories.map((c) => (
-            <Chip
-              key={c}
-              label={c}
-              onClick={() => {
-                setCategory(c);
-                if (isMobile) setDrawerOpen(false);
-              }}
-              variant={category === c ? "filled" : "outlined"}
-              sx={{
-                borderColor: P.border,
-                bgcolor: category === c ? P.accent2 : P.surface,
-                color: P.text,
-                "&:hover": { bgcolor: P.surface2 },
-              }}
-            />
-          ))}
-
-          {category && (
-            <Chip
-              label="Clear"
-              onClick={() => setCategory("")}
-              variant="outlined"
-              sx={{
-                borderColor: P.border,
-                color: P.subtext,
-                "&:hover": { bgcolor: P.surface2 },
-              }}
-            />
-          )}
-        </Box>
-      </Box>
     </Box>
   );
 
@@ -263,7 +221,7 @@ export default function Home() {
       <AppBar
         position="sticky"
         sx={{
-          bgcolor: "rgba(255, 255, 255, 0.82)",
+          bgcolor: "rgba(255, 255, 255, 0.86)",
           color: P.text,
           boxShadow: "none",
           backdropFilter: "blur(10px)",
@@ -271,43 +229,49 @@ export default function Home() {
         }}
       >
         <Toolbar sx={{ gap: 1.5 }}>
-          <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: P.text }}>
-            <MenuIcon />
-          </IconButton>
+          {/* Left */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: P.text }}>
+              <MenuIcon />
+            </IconButton>
 
-          <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
-            <Typography variant="h6" sx={{ fontWeight: 900 }}>
-             🐱 MeowTube
-            </Typography>
-          </Link>
-
-          <Box sx={{ flex: 1 }} />
-
-          {/* Search */}
-          <Box component="form" onSubmit={onSearchSubmit} sx={{ width: { xs: "100%", sm: 560 } }}>
-            <Paper
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                px: 1.2,
-                py: 0.3,
-                borderRadius: 999,
-                bgcolor: P.surface,
-                border: `1px solid ${P.border}`,
-                boxShadow: "0 10px 25px rgba(255, 127, 176, 0.10)",
-              }}
-            >
-              <InputBase
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search something cute…"
-                sx={{ ml: 1, flex: 1, color: P.text }}
-              />
-              <IconButton type="submit" sx={{ color: P.accent }}>
-                <SearchIcon />
-              </IconButton>
-            </Paper>
+            <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+              <Typography variant="h6" sx={{ fontWeight: 900 }}>
+                MeowTube
+              </Typography>
+            </Link>
           </Box>
+
+          {/* Center search (centered!) */}
+          <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
+            <Box component="form" onSubmit={onSearchSubmit} sx={{ width: "100%", maxWidth: 620 }}>
+              <Paper
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  px: 1.2,
+                  py: 0.3,
+                  borderRadius: 999,
+                  bgcolor: P.surface,
+                  border: `1px solid ${P.border}`,
+                  boxShadow: "0 10px 25px rgba(255, 127, 176, 0.10)",
+                }}
+              >
+                <InputBase
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Search something cute…"
+                  sx={{ ml: 1, flex: 1, color: P.text }}
+                />
+                <IconButton type="submit" sx={{ color: P.accent }}>
+                  <SearchIcon />
+                </IconButton>
+              </Paper>
+            </Box>
+          </Box>
+
+          {/* Right spacer (keeps search visually centered) */}
+          <Box sx={{ width: { xs: 0, sm: 180 } }} />
         </Toolbar>
       </AppBar>
 
@@ -316,15 +280,13 @@ export default function Home() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         variant="temporary"
-        PaperProps={{
-          sx: { bgcolor: P.surface, borderRight: `1px solid ${P.border}` },
-        }}
+        PaperProps={{ sx: { bgcolor: P.surface, borderRight: `1px solid ${P.border}` } }}
       >
         {drawer}
       </Drawer>
 
       {/* Content */}
-      <Box sx={{ px: { xs: 2, md: 3 }, py: 3 }}>
+      <Box sx={{ px: { xs: 2, md: 3 }, py: 2 }}>
         {err && (
           <Box
             sx={{
@@ -340,28 +302,66 @@ export default function Home() {
           </Box>
         )}
 
-        {(search || category) && (
-          <Box sx={{ mb: 2, display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
-            {search && (
-              <Chip
-                label={`Search: ${search}`}
-                onDelete={() => {
+        {/* ✅ Categories row ABOVE videos (YouTube-like) */}
+        <Box
+          sx={{
+            position: "sticky",
+            top: { xs: 56, sm: 64 }, // sticks under AppBar
+            zIndex: 2,
+            bgcolor: P.bg,
+            py: 1.2,
+            mb: 2,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              overflowX: "auto",
+              pb: 0.5,
+              "&::-webkit-scrollbar": { height: 6 },
+              "&::-webkit-scrollbar-thumb": { background: P.border, borderRadius: 999 },
+            }}
+          >
+            {categories.map((c) => {
+              const selected = (category || "All") === c;
+              return (
+                <Chip
+                  key={c}
+                  label={c}
+                  clickable
+                  onClick={() => setCategory(c === "All" ? "" : c)}
+                  sx={{
+                    borderRadius: 999,
+                    border: `1px solid ${P.border}`,
+                    bgcolor: selected ? P.accent2 : P.surface,
+                    color: P.text,
+                    fontWeight: selected ? 800 : 600,
+                    "&:hover": { bgcolor: P.surface2 },
+                  }}
+                />
+              );
+            })}
+          </Box>
+
+          {/* optional: show active search tag */}
+          {search && (
+            <Typography variant="body2" sx={{ color: P.subtext, mt: 1 }}>
+              Results for: <b>{search}</b>{" "}
+              <button
+                onClick={() => {
                   setSearch("");
                   setQ("");
                 }}
-                sx={{ bgcolor: P.surface, border: `1px solid ${P.border}` }}
-              />
-            )}
-            {category && (
-              <Chip
-                label={`Category: ${category}`}
-                onDelete={() => setCategory("")}
-                sx={{ bgcolor: P.surface, border: `1px solid ${P.border}` }}
-              />
-            )}
-          </Box>
-        )}
+                style={{ marginLeft: 8, cursor: "pointer" }}
+              >
+                clear
+              </button>
+            </Typography>
+          )}
+        </Box>
 
+        {/* Videos grid */}
         <Grid container spacing={2}>
           {videos.map((v) => (
             <Grid item key={v._id} xs={12} sm={6} md={4} lg={3}>
