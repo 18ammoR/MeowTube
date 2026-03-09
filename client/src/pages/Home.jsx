@@ -181,38 +181,48 @@ export default function Home() {
   }
 
   const drawer = (
-    <Box sx={{ width: 270, bgcolor: P.surface, height: "100%", color: P.text }}>
-      <Box sx={{ px: 2, py: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 900 }}>
-          🐱 MeowTube
-        </Typography>
-        <Typography variant="body2" sx={{ color: P.subtext }}>
-        
-        </Typography>
-      </Box>
-      <Divider sx={{ borderColor: P.border }} />
+   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+  <Link to="/" style={{ textDecoration: "none" }}>
+    <Typography
+      variant="h6"
+      sx={{
+        fontWeight: 900,
+        color: P.accent,
+        background: P.surface2,
+        px: 2,
+        py: 0.6,
+        borderRadius: 999,
+        border: `1px solid ${P.border}`,
+        boxShadow: "0 6px 16px rgba(255,127,176,0.15)",
+        display: "flex",
+        alignItems: "center",
+        gap: 0.5,
+      }}
+    >
+      🐱 MeowTube
+    </Typography>
+  </Link>
 
-      <List>
-        {sidebarItems.map((it) => (
-          <ListItemButton
-            key={it.label}
-            onClick={() => {
-              it.action?.();
-              if (isMobile) setDrawerOpen(false);
-            }}
-            sx={{
-              mx: 1,
-              my: 0.4,
-              borderRadius: 3,
-              "&:hover": { bgcolor: P.surface2 },
-            }}
-          >
-            <ListItemIcon sx={{ color: P.accent }}>{it.icon}</ListItemIcon>
-            <ListItemText primary={it.label} />
-          </ListItemButton>
-        ))}
-      </List>
-    </Box>
+  <Link to="/upload" style={{ textDecoration: "none" }}>
+    <Typography
+      sx={{
+        fontWeight: 700,
+        color: "#fff",
+        background: `linear-gradient(135deg, ${P.accent}, ${P.accent2})`,
+        px: 2,
+        py: 0.6,
+        borderRadius: 999,
+        boxShadow: "0 6px 16px rgba(255,127,176,0.25)",
+        transition: "0.2s",
+        "&:hover": {
+          transform: "translateY(-1px)",
+        },
+      }}
+    >
+      Upload ✨
+    </Typography>
+  </Link>
+</Box>
   );
 
   return (
