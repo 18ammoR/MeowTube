@@ -18,6 +18,10 @@ export default function Watch() {
   const [busy, setBusy] = useState(false);
   const [subBusy, setSubBusy] = useState(false);
 
+  const token = getToken();
+const myId = token ? JSON.parse(atob(token.split(".")[1])).id : null;
+const isOwner = myId && video?.userId === myId;
+
   // local UI state (since your backend doesn't have "did I like/subscribed?" endpoints yet)
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
@@ -29,6 +33,24 @@ export default function Watch() {
     if (!video) return "";
     return ytEmbedUrl(video.youtubeUrl, video.videoId);
   }, [video]);
+
+  async function handleDelete() {
+  if (!tokenExists) {
+    alert("Please login first.");
+    return;
+  }
+
+  const ok = confirm("Delete this video? This cannot be undone.");
+  if (!ok) return;
+
+  try {
+    await api.delete(`/videos/${id}`);
+    alert("Video deleted!");
+    window.location.href = "/";
+  } catch (e) {
+    alert(e?.response?.data?.error || e.message || "Failed to delete video");
+  }
+}
 
   async function loadVideo() {
     try {
@@ -138,6 +160,23 @@ export default function Watch() {
               <div style={{ fontSize: 13, color: "#666" }}>{video.uploaderSubscribers} subscribers</div>
             )}
           </div>
+
+          {isOwner && (
+  <button
+    onClick={handleDelete}
+    style={{
+      padding: "10px 14px",
+      borderRadius: 10,
+      border: "1px solid #f3b3c8",
+      cursor: "pointer",
+      background: "#fff0f7",
+      fontWeight: "bold",
+      color: "#a12a52",
+    }}
+  >
+    Delete
+  </button>
+)}
 
           <button
             onClick={handleSubscribe}
