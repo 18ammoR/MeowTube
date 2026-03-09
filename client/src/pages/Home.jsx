@@ -81,7 +81,10 @@ function VideoCard({ video }) {
         component="img"
         image={video.thumbnail || "https://via.placeholder.com/480x270?text=No+Thumbnail"}
         alt={video.title}
-        sx={{ aspectRatio: "16/9" }}
+        sx={{  width: "100%",
+        aspectRatio: "16 / 9",
+        objectFit: "cover",     
+        backgroundColor: "#fff0f7",}}
       />
       <Box sx={{ display: "flex", gap: 1.5, p: 1.6 }}>
         <Avatar
