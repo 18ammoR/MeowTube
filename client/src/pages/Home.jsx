@@ -25,7 +25,6 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
-import MicIcon from "@mui/icons-material/Mic";
 import HomeIcon from "@mui/icons-material/Home";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
@@ -141,7 +140,7 @@ export default function Home() {
   const [category, setCategory] = useState("");
 
   const categories = useMemo(
-    () => ["All", "Gaming", "Music", "HTML", "News","Figma","Podcasts", "Pop Rock"],
+    () => ["All", "Gaming", "Music", "Genshin Impact", "HTML", "News", "Podcasts", "Pop Rock"],
     []
   );
 
@@ -185,52 +184,74 @@ export default function Home() {
   }
 
   const drawer = (
-   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-  <Link to="/" style={{ textDecoration: "none" }}>
-    <Typography
-      variant="h6"
-      sx={{
-        fontWeight: 900,
-        color: P.accent,
-        background: P.surface2,
-        px: 2,
-        mt: 1,
-        ml: 1,
-        py: 0.6,
-        borderRadius: 999,
-        border: `1px solid ${P.border}`,
-        boxShadow: "0 6px 16px rgba(212, 141, 168, 0.15)",
-        display: "flex",
-        alignItems: "center",
-        gap: 0.5,
-      }}
-    >
-      🐱 MeowTube
-    </Typography>
-  </Link>
+  <Box sx={{ width: 270, bgcolor: P.surface, height: "100%", color: P.text }}>
+    {/* Top brand area */}
+    <Box sx={{ px: 2, py: 2, display: "flex", flexDirection: "column", gap: 1 }}>
+      <Link to="/" style={{ textDecoration: "none" }}>
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 900,
+            color: P.accent,
+            background: P.surface2,
+            px: 2,
+            py: 0.8,
+            borderRadius: 999,
+            border: `1px solid ${P.border}`,
+            boxShadow: "0 6px 16px rgba(255,127,176,0.15)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.6,
+            width: "fit-content",
+          }}
+        >
+          🐱 MeowTube
+        </Typography>
+      </Link>
 
-  <Link to="/upload" style={{ textDecoration: "none" }}>
-    <Typography
-      sx={{
-        fontWeight: 700,
-        color: "#fff",
-        background: `linear-gradient(135deg, ${P.accent}, ${P.accent2})`,
-        px: 2,
-        mr: 1,
-        py: 0.6,
-        borderRadius: 999,
-        boxShadow: "0 6px 16px rgba(255,127,176,0.25)",
-        transition: "0.2s",
-        "&:hover": {
-          transform: "translateY(-1px)",
-        },
-      }}
-    >
-      Upload ✨
-    </Typography>
-  </Link>
-</Box>
-  );
+      <Link to="/upload" style={{ textDecoration: "none" }}>
+        <Typography
+          sx={{
+            fontWeight: 700,
+            color: "#fff",
+            background: `linear-gradient(135deg, ${P.accent}, ${P.accent2})`,
+            px: 2,
+            py: 0.8,
+            borderRadius: 999,
+            boxShadow: "0 6px 16px rgba(255,127,176,0.25)",
+            width: "fit-content",
+          }}
+        >
+          Upload ✨
+        </Typography>
+      </Link>
+    </Box>
+
+    <Divider sx={{ borderColor: P.border }} />
+
+    {/* Menu items */}
+    <List>
+      {sidebarItems.map((it) => (
+        <ListItemButton
+          key={it.label}
+          onClick={() => {
+            it.action?.();
+            setDrawerOpen(false);
+          }}
+          sx={{
+            mx: 1,
+            my: 0.4,
+            borderRadius: 3,
+            "&:hover": { bgcolor: P.surface2 },
+          }}
+        >
+          <ListItemIcon sx={{ color: P.accent }}>{it.icon}</ListItemIcon>
+          <ListItemText primary={it.label} />
+        </ListItemButton>
+      ))}
+    </List>
+  </Box>
+);
 
   return (
     <Box sx={{ bgcolor: P.bg, minHeight: "100vh" }}>
@@ -252,43 +273,40 @@ export default function Home() {
               <MenuIcon />
             </IconButton>
 
-            <Link to="/" style={{ textDecoration: "none", color: "inherit"}}>
+            <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
               <Typography variant="h6" sx={{ fontWeight: 900 }}>
                 MeowTube
               </Typography>
             </Link>
           </Box>
 
-         <Box component="form" onSubmit={onSearchSubmit} sx={{ width: "100%", ml: 60, maxWidth: 620, display: "flex", alignItems: "center", gap: 1 }}>
-      {/* Search bar */}
-      <Paper
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          px: 1.2,
-          py: 0.3,
-          borderRadius: 999,
-          bgcolor: P.surface,
-          border: `1px solid ${P.border}`,
-          boxShadow: "0 10px 25px rgba(255, 127, 176, 0.10)",
-          flex: 1,
-        }}
-      >
-        <InputBase
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search something cute…"
-          sx={{ ml: 1, flex: 1, color: P.text }}
-        />
-        <IconButton type="submit" sx={{ color: P.accent }}>
-          <SearchIcon />
-        </IconButton>
-      </Paper>
-
-      <IconButton sx={{ color: P.accent, bgcolor: P.surface2, "&:hover": { bgcolor: P.accent2 } }}>
-        <MicIcon />
-      </IconButton>
-    </Box>
+          {/* Center search (centered!) */}
+          <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
+            <Box component="form" onSubmit={onSearchSubmit} sx={{ width: "100%", maxWidth: 620 }}>
+              <Paper
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  px: 1.2,
+                  py: 0.3,
+                  borderRadius: 999,
+                  bgcolor: P.surface,
+                  border: `1px solid ${P.border}`,
+                  boxShadow: "0 10px 25px rgba(255, 127, 176, 0.10)",
+                }}
+              >
+                <InputBase
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Search something cute…"
+                  sx={{ ml: 1, flex: 1, color: P.text }}
+                />
+                <IconButton type="submit" sx={{ color: P.accent }}>
+                  <SearchIcon />
+                </IconButton>
+              </Paper>
+            </Box>
+          </Box>
 
           {/* Right spacer (keeps search visually centered) */}
           <Box sx={{ width: { xs: 0, sm: 180 } }} />
