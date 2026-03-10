@@ -120,28 +120,28 @@ function TopBar() {
     >
       Login 
     </Link>
-    <Link
-  to="/register"
-  style={{
-    textDecoration: "none",
-    background: "linear-gradient(135deg, #ffccd9, #ffd6e7)", // same soft pink gradient
-    color: "#ff4f8b", // same dark pink text
-    padding: "6px 16px",
-    borderRadius: "999px", // same pill shape
-    fontWeight: "700",
-    fontFamily: "Arial, sans-serif", // same normal font
-    boxShadow: "0 4px 12px rgba(255,182,193,0.35)", // same soft shadow
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "6px",
-    transition: "0.2s",
-    cursor: "pointer",
-  }}
-  onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-  onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
->
-  🌸 Register
-</Link>
+        <Link
+      to="/register"
+      style={{
+        textDecoration: "none",
+        background: "linear-gradient(135deg, #ffccd9, #ffd6e7)", // same soft pink gradient
+        color: "#ff4f8b", // same dark pink text
+        padding: "6px 16px",
+        borderRadius: "999px", // same pill shape
+        fontWeight: "700",
+        fontFamily: "Arial, sans-serif", // same normal font
+        boxShadow: "0 4px 12px rgba(255,182,193,0.35)", // same soft shadow
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px",
+        transition: "0.2s",
+        cursor: "pointer",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+    >
+      🌸 Register
+    </Link>
         </>
       )}
     </header>
