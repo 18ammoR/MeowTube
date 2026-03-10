@@ -24,7 +24,17 @@ export default function Login() {
   return (
     <Box sx={{ p: 3, display: "grid", placeItems: "center" }}>
       <Paper sx={{ p: 3, width: "100%", maxWidth: 420 }}>
-        <Typography variant="h5" sx={{ mb: 2 }}>Login</Typography>
+                <Typography
+          variant="h5"
+          sx={{
+            mb: 2,
+            fontFamily: "Arial, Helvetica, sans-serif",
+            fontWeight: 700,
+            color: "#333333",
+          }}
+        >
+          Login
+        </Typography>
         {err && <Alert severity="error" sx={{ mb: 2 }}>{err}</Alert>}
         <Box component="form" onSubmit={onSubmit} sx={{ display: "grid", gap: 2 }}>
           <TextField label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />

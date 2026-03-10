@@ -137,7 +137,7 @@ function TopBar() {
       onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
       onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
     >
-      Login 
+      Login
     </Link>
         <Link
       to="/register"
