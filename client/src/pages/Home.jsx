@@ -29,6 +29,8 @@ import HomeIcon from "@mui/icons-material/Home";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
+import HistoryIcon from "@mui/icons-material/History";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 function timeAgo(ts) {
   if (!ts) return "";
@@ -150,6 +152,8 @@ export default function Home() {
       { label: "Trending", icon: <WhatshotIcon />, action: () => {} },
       { label: "Subscriptions", icon: <SubscriptionsIcon />, action: () => {} },
       { label: "Library", icon: <VideoLibraryIcon />, action: () => {} },
+      { label: "History", icon: <HistoryIcon />, to: "/history" },
+    { label: "Settings", icon: <SettingsIcon />, to: "/settings" },
     ],
     []
   );
