@@ -57,13 +57,13 @@ function TopBar() {
       to="/upload"
       style={{
         textDecoration: "none",
-        background: "linear-gradient(135deg, #ff4f8b, #ffc2d1)", // dark pink to light pink
-        color: "#ffffff", // white text
+        background: "linear-gradient(135deg, #ff4f8b, #ffc2d1)",
+        color: "#ffffff",
         padding: "6px 16px",
-        borderRadius: "999px", // pill shape
+        borderRadius: "999px",
         fontWeight: "700",
         fontFamily: "'Poppins', 'Comic Sans MS', cursive",
-        boxShadow: "0 4px 10px rgba(255,182,193,0.35)", // soft shadow
+        boxShadow: "0 4px 10px rgba(255,182,193,0.35)",
         display: "inline-flex",
         alignItems: "center",
         gap: "6px",
@@ -80,20 +80,39 @@ function TopBar() {
 
       {user ? (
         <>
-          <span style={{ fontSize: 14 }}>Hi, <b>{user.username}</b></span>
-          <button
-            onClick={onLogout}
-            style={{
-              padding: "8px 12px",
-              borderRadius: 10,
-              border: "1px solid #ddd",
-              cursor: "pointer",
-              background: "white",
-              fontWeight: "bold",
-            }}
-          >
-            Logout
-          </button>
+          <span
+      style={{
+        fontSize: 14,
+        fontWeight: 600,
+        fontFamily: "sans-serif",
+        color: "#31282b",
+        letterSpacing: "0.3px",
+      }}
+    >
+      Hi, <b>{user.username}</b> 
+    </span>
+            <button
+      onClick={onLogout}
+      style={{
+        padding: "8px 16px",
+        borderRadius: "999px",
+        border: "none",
+        cursor: "pointer",
+        background: "linear-gradient(135deg, #ffccd9, #ffd6e7)",
+        color: "#ff4f8b",
+        fontWeight: "700",
+        fontFamily: "Arial, sans-serif",
+        boxShadow: "0 4px 12px rgba(255,182,193,0.35)",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px",
+        transition: "0.2s",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+    >
+      Logout 
+    </button>
         </>
       ) : (
         <>
@@ -102,13 +121,13 @@ function TopBar() {
       style={{
         textDecoration: "none",
       
-        color: "#ff4f8b", // dark pink text
+        color: "#ff4f8b",
         padding: "6px 16px",
-        borderRadius: "999px", // pill shape
+        borderRadius: "999px",
         border: "1px solid #ffc2d1",
         fontWeight: "700",
-        fontFamily: "Arial, sans-serif", // normal system font
-        boxShadow: "0 4px 12px rgba(255,182,193,0.35)", // soft shadow
+        fontFamily: "Arial, sans-serif",
+        boxShadow: "0 4px 12px rgba(255,182,193,0.35)",
         display: "inline-flex",
         alignItems: "center",
         gap: "6px",
@@ -124,13 +143,13 @@ function TopBar() {
       to="/register"
       style={{
         textDecoration: "none",
-        background: "linear-gradient(135deg, #ffccd9, #ffd6e7)", // same soft pink gradient
-        color: "#ff4f8b", // same dark pink text
+        background: "linear-gradient(135deg, #ffccd9, #ffd6e7)",
+        color: "#ff4f8b",
         padding: "6px 16px",
-        borderRadius: "999px", // same pill shape
+        borderRadius: "999px",
         fontWeight: "700",
-        fontFamily: "Arial, sans-serif", // same normal font
-        boxShadow: "0 4px 12px rgba(255,182,193,0.35)", // same soft shadow
+        fontFamily: "Arial, sans-serif",
+        boxShadow: "0 4px 12px rgba(255,182,193,0.35)",
         display: "inline-flex",
         alignItems: "center",
         gap: "6px",

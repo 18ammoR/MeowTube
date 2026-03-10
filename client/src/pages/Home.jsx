@@ -140,7 +140,7 @@ export default function Home() {
   const [category, setCategory] = useState("");
 
   const categories = useMemo(
-    () => ["All", "Gaming", "Music", "HTML", "News","Figma", "Podcasts", "Pop Rock"],
+    () => ["All", "Gaming", "Music", "HTML", "News","Figma","Podcasts", "Pop Rock"],
     []
   );
 
@@ -196,7 +196,7 @@ export default function Home() {
         py: 0.6,
         borderRadius: 999,
         border: `1px solid ${P.border}`,
-        boxShadow: "0 6px 16px rgba(255,127,176,0.15)",
+        boxShadow: "0 6px 16px rgba(212, 141, 168, 0.15)",
         display: "flex",
         alignItems: "center",
         gap: 0.5,
