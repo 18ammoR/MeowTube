@@ -41,7 +41,13 @@ export default function Upload() {
   return (
     <Box sx={{ p: 3, display: "grid", placeItems: "center" }}>
       <Paper sx={{ p: 3, width: "100%", maxWidth: 600 }}>
-        <Typography variant="h5" sx={{ mb: 2 }}>Submit a YouTube Video</Typography>
+        <Typography   variant="h5"
+          sx={{
+            mb: 2,
+            fontFamily: "Arial, Helvetica, sans-serif",
+            fontWeight: 700,
+            color: "#333333",
+          }}>Submit a YouTube Video</Typography>
         {err && <Alert severity="error" sx={{ mb: 2 }}>{err}</Alert>}
         {msg && <Alert severity="success" sx={{ mb: 2 }}>{msg}</Alert>}
 
@@ -56,3 +62,4 @@ export default function Upload() {
     </Box>
   );
 }
+
