@@ -25,6 +25,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
+import MicIcon from "@mui/icons-material/Mic";
 import HomeIcon from "@mui/icons-material/Home";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
@@ -284,33 +285,36 @@ export default function Home() {
             </Link>
           </Box>
 
-          {/* Center search (centered!) */}
-          <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
-            <Box component="form" onSubmit={onSearchSubmit} sx={{ width: "100%", maxWidth: 620 }}>
-              <Paper
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  px: 1.2,
-                  py: 0.3,
-                  borderRadius: 999,
-                  bgcolor: P.surface,
-                  border: `1px solid ${P.border}`,
-                  boxShadow: "0 10px 25px rgba(255, 127, 176, 0.10)",
-                }}
-              >
-                <InputBase
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search something cute…"
-                  sx={{ ml: 1, flex: 1, color: P.text }}
-                />
-                <IconButton type="submit" sx={{ color: P.accent }}>
-                  <SearchIcon />
-                </IconButton>
-              </Paper>
-            </Box>
-          </Box>
+              <Box component="form" onSubmit={onSearchSubmit} sx={{ width: "100%", ml: 60, maxWidth: 620, display: "flex", alignItems: "center", gap: 1 }}>
+      {/* Search bar */}
+      <Paper
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          px: 1.2,
+          py: 0.3,
+          borderRadius: 999,
+          bgcolor: P.surface,
+          border: `1px solid ${P.border}`,
+          boxShadow: "0 10px 25px rgba(255, 127, 176, 0.10)",
+          flex: 1,
+        }}
+      >
+        <InputBase
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search something cute…"
+          sx={{ ml: 1, flex: 1, color: P.text }}
+        />
+        <IconButton type="submit" sx={{ color: P.accent }}>
+          <SearchIcon />
+        </IconButton>
+      </Paper>
+
+      <IconButton sx={{ color: P.accent, bgcolor: P.surface2, "&:hover": { bgcolor: P.accent2 } }}>
+        <MicIcon />
+      </IconButton>
+    </Box>
 
           {/* Right spacer (keeps search visually centered) */}
           <Box sx={{ width: { xs: 0, sm: 180 } }} />

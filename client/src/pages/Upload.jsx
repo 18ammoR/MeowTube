@@ -41,7 +41,7 @@ export default function Upload() {
   return (
     <Box sx={{ p: 3, display: "grid", placeItems: "center" }}>
       <Paper sx={{ p: 3, width: "100%", maxWidth: 600 }}>
-        <Typography   variant="h5"
+         <Typography   variant="h5"
           sx={{
             mb: 2,
             fontFamily: "Arial, Helvetica, sans-serif",

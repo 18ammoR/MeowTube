@@ -24,6 +24,7 @@ export default function Login() {
   return (
     <Box sx={{ p: 3, display: "grid", placeItems: "center" }}>
       <Paper sx={{ p: 3, width: "100%", maxWidth: 420 }}>
+         <Typography variant="h5" sx={{ mb: 2 }}>Login</Typography>
                 <Typography
           variant="h5"
           sx={{
