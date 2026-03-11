@@ -57,7 +57,7 @@ function TopBar() {
       to="/upload"
       style={{
         textDecoration: "none",
-          background: "linear-gradient(135deg, #ff4f8b, #ffc2d1)",
+        background: "linear-gradient(135deg, #ff4f8b, #ffc2d1)",
         color: "#ffffff",
         padding: "6px 16px",
          borderRadius: "999px",

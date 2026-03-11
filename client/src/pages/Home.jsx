@@ -202,7 +202,6 @@ export default function Home() {
             px: 2,
             py: 0.8,
             borderRadius: 999,
-            border: `1px solid ${P.border}`,
             boxShadow: "0 6px 16px rgba(255,127,176,0.15)",
             display: "inline-flex",
             alignItems: "center",
