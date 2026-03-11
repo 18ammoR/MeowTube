@@ -142,7 +142,7 @@ export default function Home() {
   const [category, setCategory] = useState("");
 
   const categories = useMemo(
-    () => ["All", "Gaming", "Music", "Genshin Impact", "HTML", "News", "Podcasts", "Pop Rock","Genshin Impact"],
+    () => ["All", "Gaming", "Music", "Genshin Impact", "HTML", "News", "Podcasts", "Pop Rock","Minecraft","Cartoons","Animated Films","Memes","Honkai: Star Rail","Emocore","Car","Dance","Indie Games"],
     []
   );
 
