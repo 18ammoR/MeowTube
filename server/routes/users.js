@@ -5,66 +5,59 @@ const { usersDB, videosDB, subscriptionsDB } = require("../config/db");
 const router = express.Router();
 
 // GET user profile + their videos
-router.get("/:id", (req, res) => {
-  const userId = req.params.id;
+router.get("/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await usersDB.findOne({ _id: userId });
 
-  usersDB.findOne({ _id: userId }, (err, user) => {
-    if (err) return res.status(500).json({ error: "DB error" });
-    if (!user) return res.status(404).json({ error: "User not found" });
+    const videos = await videosDB.find({ userId });
+    videos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
-    videosDB.find({ userId }).sort({ createdAt: -1 }).exec((vErr, videos) => {
-      if (vErr) return res.status(500).json({ error: "DB error" });
-
-      res.json({
-        id: user._id,
-        username: user.username,
-        avatar: user.avatar,
-        subscribers: user.subscribers || 0,
-        createdAt: user.createdAt,
-        videos,
-      });
+       res.json({
+      id: user._id,
+      username: user.username,
+      avatar: user.avatar,
+      subscribers: user.subscribers || 0,
+      createdAt: user.createdAt,
+      videos,
     });
-  });
+    } catch (err) {
+    console.error("GET USER ERROR:", err);
+    res.status(500).json({ error: "DB error" });
+  }
 });
 
 // Subscribe/unsubscribe toggle
-router.post("/:id/subscribe", auth, (req, res) => {
-  const channelId = req.params.id;
-  const subscriberId = req.user.id;
+router.post("/:id/subscribe", auth, async (req, res) => {
+  try {
+    const channelId = req.params.id;
+    const subscriberId = req.user.id;
 
-  if (channelId === subscriberId)
-    return res.status(400).json({ error: "Cannot subscribe to yourself" });
+  if (channelId === subscriberId) {
+      return res.status(400).json({ error: "Cannot subscribe to yourself" });
+    }
 
-  subscriptionsDB.findOne({ channelId, subscriberId }, (err, sub) => {
-    if (err) return res.status(500).json({ error: "DB error" });
+    const channel = await usersDB.findOne({ _id: channelId });
+    if (!channel) return res.status(404).json({ error: "User not found" });
+
+  const sub = await subscriptionsDB.findOne({ channelId, subscriberId });
 
     if (sub) {
       // unsubscribe
-      subscriptionsDB.remove({ _id: sub._id }, {}, (dErr) => {
-        if (dErr) return res.status(500).json({ error: "DB error" });
-        usersDB.update({ _id: channelId }, { $inc: { subscribers: -1 } }, {}, () => {
-          usersDB.findOne({ _id: channelId }, (e2, u2) => {
-            if (e2) return res.status(500).json({ error: "DB error" });
-            res.json({ subscribed: false, subscribers: u2?.subscribers || 0 });
-          });
-        });
-      });
-    } else {
-      // subscribe
-      subscriptionsDB.insert(
-        { channelId, subscriberId, createdAt: Date.now() },
-        (iErr) => {
-          if (iErr) return res.status(500).json({ error: "DB error" });
-          usersDB.update({ _id: channelId }, { $inc: { subscribers: 1 } }, {}, () => {
-            usersDB.findOne({ _id: channelId }, (e2, u2) => {
-              if (e2) return res.status(500).json({ error: "DB error" });
-              res.json({ subscribed: true, subscribers: u2?.subscribers || 0 });
-            });
-          });
-        }
-      );
+      await subscriptionsDB.remove({ _id: sub._id }, { multi: false });
+      await usersDB.update({ _id: channelId }, { $inc: { subscribers: -1 } });
+      const updated = await usersDB.findOne({ _id: channelId });
+      return res.json({ subscribed: false, subscribers: updated?.subscribers || 0 });
     }
-  });
+      // subscribe
+    await subscriptionsDB.insert({ channelId, subscriberId, createdAt: Date.now() });
+    await usersDB.update({ _id: channelId }, { $inc: { subscribers: 1 } });
+    const updated = await usersDB.findOne({ _id: channelId });
+    res.json({ subscribed: true, subscribers: updated?.subscribers || 0 });
+  } catch (err) {
+    console.error("TOGGLE SUBSCRIPTION ERROR:", err);
+    res.status(500).json({ error: "DB error" });
+  }
 });
 
 module.exports = router;

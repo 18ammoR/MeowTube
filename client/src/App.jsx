@@ -1,12 +1,13 @@
-import { Routes, Route, Link, useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import Watch from "./pages/Watch.jsx";
-// (add these if you have them)
 import Upload from "./pages/Upload.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
-
-import { getToken, clearToken } from "./api";
+import History from "./pages/History.jsx";
+import Settings from "./pages/Settings.jsx";
+import Profile from "./pages/Profile.jsx";
+import Notifications from "./pages/Notifications.jsx";
 
 function decodeJwtPayload(token) {
   try {
@@ -169,18 +170,16 @@ function TopBar() {
 
 export default function App() {
   return (
-    <div>
-      <TopBar />
-
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/watch/:id" element={<Watch />} />
-
-        {/* only if you created these pages */}
-        <Route path="/upload" element={<Upload />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </div>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/watch/:id" element={<Watch />} />
+      <Route path="/upload" element={<Upload />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/history" element={<History />} />
+      <Route path="/settings" element={<Settings />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/notifications" element={<Notifications />} />
+    </Routes>
   );
 }
