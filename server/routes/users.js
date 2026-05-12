@@ -1,6 +1,6 @@
 const express = require("express");
 const auth = require("../middleware/auth");
-const { usersDB, videosDB, subscriptionsDB } = require("../config/db");
+const { usersDB, videosDB } = require("../config/db");
 
 const router = express.Router();
 
@@ -10,53 +10,102 @@ router.get("/:id", async (req, res) => {
     const userId = req.params.id;
     const user = await usersDB.findOne({ _id: userId });
 
+    if (!user) return res.status(404).json({ error: "User not found" });
+
     const videos = await videosDB.find({ userId });
     videos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
-       res.json({
+    const subscribersArray = Array.isArray(user.subscribers)
+      ? user.subscribers
+      : [];
+
+    const subscriptionsArray = Array.isArray(user.subscriptions)
+      ? user.subscriptions
+      : [];
+
+    res.json({
       id: user._id,
+      _id: user._id,
       username: user.username,
       avatar: user.avatar,
-      subscribers: user.subscribers || 0,
+      email: user.email,
+      subscribers: subscribersArray.length,
+      subscriptions: subscriptionsArray,
       createdAt: user.createdAt,
       videos,
     });
-    } catch (err) {
+  } catch (err) {
     console.error("GET USER ERROR:", err);
     res.status(500).json({ error: "DB error" });
   }
 });
 
-// Subscribe/unsubscribe toggle
+// POST /api/users/:id/subscribe
 router.post("/:id/subscribe", auth, async (req, res) => {
   try {
-    const channelId = req.params.id;
-    const subscriberId = req.user.id;
+    const targetUserId = req.params.id; // uploader/channel owner
+    const currentUserId = req.user.id; // logged-in user
 
-  if (channelId === subscriberId) {
-      return res.status(400).json({ error: "Cannot subscribe to yourself" });
+    if (targetUserId === currentUserId) {
+      return res.status(400).json({ error: "You cannot subscribe to yourself" });
     }
 
-    const channel = await usersDB.findOne({ _id: channelId });
-    if (!channel) return res.status(404).json({ error: "User not found" });
+    const targetUser = await usersDB.findOne({ _id: targetUserId });
+    const currentUser = await usersDB.findOne({ _id: currentUserId });
 
-  const sub = await subscriptionsDB.findOne({ channelId, subscriberId });
-
-    if (sub) {
-      // unsubscribe
-      await subscriptionsDB.remove({ _id: sub._id }, { multi: false });
-      await usersDB.update({ _id: channelId }, { $inc: { subscribers: -1 } });
-      const updated = await usersDB.findOne({ _id: channelId });
-      return res.json({ subscribed: false, subscribers: updated?.subscribers || 0 });
+    if (!targetUser) return res.status(404).json({ error: "User not found" });
+    if (!currentUser) {
+      return res.status(404).json({ error: "Current user not found" });
     }
-      // subscribe
-    await subscriptionsDB.insert({ channelId, subscriberId, createdAt: Date.now() });
-    await usersDB.update({ _id: channelId }, { $inc: { subscribers: 1 } });
-    const updated = await usersDB.findOne({ _id: channelId });
-    res.json({ subscribed: true, subscribers: updated?.subscribers || 0 });
+
+    const targetSubscribersArray = Array.isArray(targetUser.subscribers)
+      ? targetUser.subscribers
+      : [];
+
+    const currentSubscriptionsArray = Array.isArray(currentUser.subscriptions)
+      ? currentUser.subscriptions
+      : [];
+
+    const targetSubscribers = new Set(targetSubscribersArray);
+    const currentSubscriptions = new Set(currentSubscriptionsArray);
+
+    let subscribed;
+
+    if (targetSubscribers.has(currentUserId)) {
+      targetSubscribers.delete(currentUserId);
+      currentSubscriptions.delete(targetUserId);
+      subscribed = false;
+    } else {
+      targetSubscribers.add(currentUserId);
+      currentSubscriptions.add(targetUserId);
+      subscribed = true;
+    }
+
+    await usersDB.update(
+      { _id: targetUserId },
+      {
+        $set: {
+          subscribers: [...targetSubscribers],
+        },
+      }
+    );
+
+    await usersDB.update(
+      { _id: currentUserId },
+      {
+        $set: {
+          subscriptions: [...currentSubscriptions],
+        },
+      }
+    );
+
+    res.json({
+      subscribed,
+      subscribers: targetSubscribers.size,
+    });
   } catch (err) {
-    console.error("TOGGLE SUBSCRIPTION ERROR:", err);
-    res.status(500).json({ error: "DB error" });
+    console.error("SUBSCRIBE ERROR:", err);
+    res.status(500).json({ error: "Subscribe failed" });
   }
 });
 

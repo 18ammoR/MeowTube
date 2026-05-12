@@ -1,6 +1,10 @@
 const path = require("path");
 const fs = require("fs");
 const Datastore = require("nedb-promises");
+const postsDB = Datastore.create({
+  filename: "./data/posts.db",
+  autoload: true,
+});
 
 const dataDir = path.join(__dirname, "..", "data");
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
@@ -18,4 +22,5 @@ module.exports = {
   commentsDB: makeDB("comments.db"),
   subscriptionsDB: makeDB("subscriptions.db"),
   historyDB: makeDB("history.db"),
+   postsDB,
 };

@@ -8,6 +8,8 @@ import History from "./pages/History.jsx";
 import Settings from "./pages/Settings.jsx";
 import Profile from "./pages/Profile.jsx";
 import Notifications from "./pages/Notifications.jsx";
+import CreatePost from "./pages/CreatePost.jsx";
+import Subscriptions from "./pages/Subscriptions.jsx";
 
 function decodeJwtPayload(token) {
   try {
@@ -180,6 +182,8 @@ export default function App() {
       <Route path="/settings" element={<Settings />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/notifications" element={<Notifications />} />
+      <Route path="/create-post" element={<CreatePost />} />
+      <Route path="/subscriptions" element={<Subscriptions />} />
     </Routes>
   );
 }

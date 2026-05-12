@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import meowtubeIcon from "../assets/MeowLogo.png";
 import { Link, useNavigate } from "react-router-dom";
 import {
   AppBar,
   Button,
-Badge,
+  Badge,
   Toolbar,
   IconButton,
   Typography,
@@ -25,7 +26,8 @@ Badge,
   useMediaQuery,
   Chip,
   Menu,
-MenuItem,
+  MenuItem,
+  Popover,
 
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -51,6 +53,7 @@ import VideoCallIcon from "@mui/icons-material/VideoCall";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
+
 
 function timeAgo(ts) {
   if (!ts) return "";
@@ -580,12 +583,12 @@ function ShortsSection({ shorts, onDeleted }) {
 
 export default function Home() {
   const navigate = useNavigate();
-
 const [createAnchor, setCreateAnchor] = useState(null);
 const [profileAnchor, setProfileAnchor] = useState(null);
-
 const token = localStorage.getItem("token");
 const user = token ? decodeJwtPayload(token) : null;
+const [notificationAnchor, setNotificationAnchor] = useState(null);
+const notificationOpen = Boolean(notificationAnchor);
 
 function logout() {
   localStorage.removeItem("token");
@@ -609,11 +612,12 @@ function logout() {
   const sidebarItems = useMemo(
     () => [
       { label: "Home", icon: <HomeIcon />, action: () => setCategory("") },
-      { label: "Trending", icon: <WhatshotIcon />, action: () => {} },
-      { label: "Subscriptions", icon: <SubscriptionsIcon />, action: () => {} },
+       { label: "Shorts", icon: <SlowMotionVideoIcon />, action: () => setCategory("Shorts") },
+      { label: "Subscriptions", icon: <SubscriptionsIcon />, to: "/subscriptions" },
       { label: "Library", icon: <VideoLibraryIcon />, action: () => {} },
       { label: "History", icon: <HistoryIcon />, to: "/history" },
     { label: "Settings", icon: <SettingsIcon />, to: "/settings" },
+    { label: "You", icon: <AccountCircleIcon />, to: user ? "/profile" : "/login" },
     ],
     []
   );
@@ -710,25 +714,30 @@ const bottomVideos = normalVideos.slice(VIDEOS_BEFORE_SHORTS);
 
     {/* Menu items */}
     <List>
-      {sidebarItems.map((it) => (
-        <ListItemButton
-          key={it.label}
-          onClick={() => {
-            it.action?.();
-            setDrawerOpen(false);
-          }}
-          sx={{
-            mx: 1,
-            my: 0.4,
-            borderRadius: 3,
-            "&:hover": { bgcolor: P.surface2 },
-          }}
-        >
-          <ListItemIcon sx={{ color: P.accent }}>{it.icon}</ListItemIcon>
-          <ListItemText primary={it.label} />
-        </ListItemButton>
-      ))}
-    </List>
+  {sidebarItems.map((it) => (
+    <ListItemButton
+      key={it.label}
+      onClick={() => {
+        if (it.to) {
+          navigate(it.to);
+        } else {
+          it.action?.();
+        }
+
+        setDrawerOpen(false);
+      }}
+      sx={{
+        mx: 1,
+        my: 0.4,
+        borderRadius: 3,
+        "&:hover": { bgcolor: P.surface2 },
+      }}
+    >
+      <ListItemIcon sx={{ color: P.accent }}>{it.icon}</ListItemIcon>
+      <ListItemText primary={it.label} />
+    </ListItemButton>
+  ))}
+</List>
   </Box>
 );
 
@@ -765,10 +774,29 @@ const bottomVideos = normalVideos.slice(VIDEOS_BEFORE_SHORTS);
       </IconButton>
 
       <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
-        <Typography variant="h6" sx={{ fontWeight: 900 }}>
-          MeowTube
-        </Typography>
-      </Link>
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      gap: 1,
+    }}
+  >
+    <Box
+      component="img"
+      src={meowtubeIcon}
+      alt="MeowTube logo"
+      sx={{
+        width: 38,
+        height: 38,
+        objectFit: "contain",
+      }}
+    />
+
+    <Typography variant="h6" sx={{ fontWeight: 900 }}>
+      MeowTube
+    </Typography>
+  </Box>
+</Link>
     </Box>
 
     {/* Center: search + mic */}
@@ -857,18 +885,18 @@ const bottomVideos = normalVideos.slice(VIDEOS_BEFORE_SHORTS);
       </Button>
 
       <IconButton
-        onClick={() => navigate("/notifications")}
-        sx={{
-          color: P.text,
-          bgcolor: P.surface2,
-          border: `1px solid ${P.border}`,
-          "&:hover": { bgcolor: P.accent2 },
-        }}
-      >
-        <Badge badgeContent={0} color="error">
-          <NotificationsIcon />
-        </Badge>
-      </IconButton>
+  onClick={(e) => setNotificationAnchor(e.currentTarget)}
+  sx={{
+    color: P.text,
+    bgcolor: P.surface2,
+    border: `1px solid ${P.border}`,
+    "&:hover": { bgcolor: P.accent2 },
+  }}
+>
+  <Badge badgeContent={3} color="error">
+    <NotificationsIcon />
+  </Badge>
+</IconButton>
 
       <IconButton
         onClick={(e) => setProfileAnchor(e.currentTarget)}
@@ -900,6 +928,228 @@ const bottomVideos = normalVideos.slice(VIDEOS_BEFORE_SHORTS);
   </Toolbar>
 </AppBar>
 
+<Popover
+  open={notificationOpen}
+  anchorEl={notificationAnchor}
+  onClose={() => setNotificationAnchor(null)}
+  anchorOrigin={{
+    vertical: "bottom",
+    horizontal: "right",
+  }}
+  transformOrigin={{
+    vertical: "top",
+    horizontal: "right",
+  }}
+  PaperProps={{
+    sx: {
+      mt: 1,
+      width: 430,
+      maxHeight: 620,
+      borderRadius: 4,
+      overflow: "hidden",
+      border: `1px solid ${P.border}`,
+      boxShadow: "0 16px 40px rgba(255, 127, 176, 0.22)",
+      bgcolor: P.surface,
+    },
+  }}
+>
+  <Box>
+    {/* Header */}
+    <Box
+      sx={{
+        px: 2,
+        py: 1.5,
+        display: "flex",
+        alignItems: "center",
+        borderBottom: `1px solid ${P.border}`,
+      }}
+    >
+      <Typography sx={{ fontWeight: 900, color: P.text, fontSize: 18 }}>
+        Notifications
+      </Typography>
+
+      <Box sx={{ flex: 1 }} />
+
+      <IconButton
+        size="small"
+        onClick={() => navigate("/settings")}
+        sx={{ color: P.subtext }}
+      >
+        <SettingsIcon fontSize="small" />
+      </IconButton>
+    </Box>
+
+    {/* Body */}
+    <Box
+      sx={{
+        maxHeight: 550,
+        overflowY: "auto",
+        "&::-webkit-scrollbar": { width: 8 },
+        "&::-webkit-scrollbar-thumb": {
+          bgcolor: P.border,
+          borderRadius: 999,
+        },
+      }}
+    >
+      <Typography
+        sx={{
+          px: 2,
+          pt: 2,
+          pb: 1,
+          fontWeight: 900,
+          color: P.text,
+        }}
+      >
+        Important
+      </Typography>
+
+      {[
+        {
+          user: "MeowTube",
+          text: "Welcome back! New uploaded videos are waiting for you.",
+          time: "Just now",
+          avatar: "M",
+        },
+        {
+          user: "System",
+          text: "Your video upload feature is working successfully.",
+          time: "10 minutes ago",
+          avatar: "S",
+        },
+      ].map((n, index) => (
+        <Box
+          key={index}
+          sx={{
+            px: 2,
+            py: 1.5,
+            display: "grid",
+            gridTemplateColumns: "44px 1fr 76px",
+            gap: 1.5,
+            cursor: "pointer",
+            "&:hover": { bgcolor: P.surface2 },
+          }}
+        >
+          <Avatar
+            sx={{
+              bgcolor: P.accent,
+              color: "white",
+              fontWeight: 900,
+            }}
+          >
+            {n.avatar}
+          </Avatar>
+
+          <Box>
+            <Typography sx={{ color: P.text, fontWeight: 800, lineHeight: 1.25 }}>
+              {n.user}{" "}
+              <Typography component="span" sx={{ color: P.text, fontWeight: 500 }}>
+                {n.text}
+              </Typography>
+            </Typography>
+
+            <Typography sx={{ color: P.subtext, fontSize: 13, mt: 0.4 }}>
+              {n.time}
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              width: 76,
+              height: 44,
+              borderRadius: 2,
+              bgcolor: P.surface2,
+              border: `1px solid ${P.border}`,
+              display: "grid",
+              placeItems: "center",
+              color: P.accent,
+              fontWeight: 900,
+              fontSize: 12,
+            }}
+          >
+            New
+          </Box>
+        </Box>
+      ))}
+
+      <Divider sx={{ my: 1, borderColor: P.border }} />
+
+      <Typography
+        sx={{
+          px: 2,
+          pt: 1,
+          pb: 1,
+          fontWeight: 900,
+          color: P.text,
+        }}
+      >
+        More notifications
+      </Typography>
+
+      {videos.slice(0, 5).map((v) => (
+        <Box
+          key={v._id}
+          onClick={() => {
+            setNotificationAnchor(null);
+            navigate(`/watch/${v._id}`);
+          }}
+          sx={{
+            px: 2,
+            py: 1.5,
+            display: "grid",
+            gridTemplateColumns: "44px 1fr 86px",
+            gap: 1.5,
+            cursor: "pointer",
+            "&:hover": { bgcolor: P.surface2 },
+          }}
+        >
+          <Avatar
+            sx={{
+              bgcolor: P.surface2,
+              color: P.text,
+              border: `1px solid ${P.border}`,
+              fontWeight: 900,
+            }}
+          >
+            {(v.uploaderName || "U")[0]?.toUpperCase?.() || "U"}
+          </Avatar>
+
+          <Box>
+            <Typography sx={{ color: P.text, fontWeight: 800, lineHeight: 1.25 }}>
+              {v.uploaderName || "Someone"} uploaded:{" "}
+              <Typography component="span" sx={{ fontWeight: 500 }}>
+                {v.title}
+              </Typography>
+            </Typography>
+
+            <Typography sx={{ color: P.subtext, fontSize: 13, mt: 0.4 }}>
+              {timeAgo(v.createdAt)}
+            </Typography>
+          </Box>
+
+          <Box
+            component="img"
+            src={v.thumbnail || "https://via.placeholder.com/160x90?text=Video"}
+            alt={v.title}
+            sx={{
+              width: 86,
+              aspectRatio: "16 / 9",
+              objectFit: "cover",
+              borderRadius: 2,
+              border: `1px solid ${P.border}`,
+            }}
+          />
+        </Box>
+      ))}
+
+      {videos.length === 0 && (
+        <Typography sx={{ color: P.subtext, px: 2, py: 2 }}>
+          No notifications yet ✨
+        </Typography>
+      )}
+    </Box>
+  </Box>
+</Popover>
+
 <Menu
   anchorEl={createAnchor}
   open={Boolean(createAnchor)}
@@ -918,16 +1168,16 @@ const bottomVideos = normalVideos.slice(VIDEOS_BEFORE_SHORTS);
   </MenuItem>
 
   <MenuItem
-    onClick={() => {
-      setCreateAnchor(null);
-      alert("Create post feature can be added later.");
-    }}
-  >
-    <ListItemIcon>
-      <EditNoteIcon sx={{ color: P.accent }} />
-    </ListItemIcon>
-    <ListItemText primary="Create post" />
-  </MenuItem>
+  onClick={() => {
+    setCreateAnchor(null);
+    navigate("/create-post");
+  }}
+>
+  <ListItemIcon>
+    <EditNoteIcon sx={{ color: P.accent }} />
+  </ListItemIcon>
+  <ListItemText primary="Create post" />
+</MenuItem>
 </Menu>
 
 <Menu
@@ -1024,10 +1274,13 @@ const bottomVideos = normalVideos.slice(VIDEOS_BEFORE_SHORTS);
     <Typography sx={{ fontSize: 11 }}>Shorts</Typography>
   </Box>
 
-  <Box sx={{ textAlign: "center", color: P.text }}>
-    <SubscriptionsIcon sx={{ color: P.accent }} />
-    <Typography sx={{ fontSize: 11 }}>Subscriptions</Typography>
-  </Box>
+  <Box
+  onClick={() => navigate("/subscriptions")}
+  sx={{ textAlign: "center", color: P.text, cursor: "pointer" }}
+>
+  <SubscriptionsIcon sx={{ color: P.accent }} />
+  <Typography sx={{ fontSize: 11 }}>Subscriptions</Typography>
+</Box>
 
   <Box sx={{ textAlign: "center", color: P.text }}>
     <AccountCircleIcon sx={{ color: P.accent }} />
