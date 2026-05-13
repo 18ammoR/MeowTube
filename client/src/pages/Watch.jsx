@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   AppBar,
+  Drawer,
   Toolbar,
   IconButton,
   Typography,
@@ -12,6 +13,8 @@ import {
   Avatar,
   Menu,
   MenuItem,
+  List,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Divider,
@@ -32,6 +35,9 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
+import HomeIcon from "@mui/icons-material/Home";
+import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
+import HistoryIcon from "@mui/icons-material/History";
 
 import api, { getToken, clearToken } from "../api";
 import CommentsSection from "../components/CommentsSection.jsx";
@@ -97,6 +103,7 @@ function WatchHeader({ user }) {
   const [q, setQ] = useState("");
   const [createAnchor, setCreateAnchor] = useState(null);
   const [profileAnchor, setProfileAnchor] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   function onSearchSubmit(e) {
     e.preventDefault();
@@ -109,6 +116,7 @@ function WatchHeader({ user }) {
   }
 
   return (
+    <>
     <AppBar
       position="fixed"
       sx={{
@@ -138,8 +146,8 @@ function WatchHeader({ user }) {
       >
         {/* Left */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <IconButton onClick={() => navigate("/")} sx={{ color: P.text }}>
-            <MenuIcon />
+          <IconButton onClick={() => setDrawerOpen((prev) => !prev)} sx={{ color: P.text }}>
+          <MenuIcon />
           </IconButton>
 
           <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
@@ -381,8 +389,89 @@ function WatchHeader({ user }) {
           </Menu>
         </Box>
       </Toolbar>
-    </AppBar>
-  );
+        </AppBar>
+
+    <Drawer
+  open={drawerOpen}
+  variant="persistent"
+  PaperProps={{
+    sx: {
+      width: 270,
+      bgcolor: P.surface2,
+      borderRight: `1px solid ${P.border}`,
+      top: `${TOP_BAR_HEIGHT}px`,
+      height: `calc(100vh - ${TOP_BAR_HEIGHT}px)`,
+      zIndex: 1200,
+      boxShadow: "8px 0 24px rgba(255, 127, 176, 0.14)",
+    },
+  }}
+>
+      <Box sx={{ width: "100%", height: "100%", py: 2 }}>
+        <List>
+          <ListItemButton
+            onClick={() => {
+              setDrawerOpen(false);
+              navigate("/");
+            }}
+          >
+            <ListItemIcon sx={{ color: P.accent }}>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary="Home" />
+          </ListItemButton>
+
+          <ListItemButton
+            onClick={() => {
+              setDrawerOpen(false);
+              navigate("/subscriptions");
+            }}
+          >
+            <ListItemIcon sx={{ color: P.accent }}>
+              <SubscriptionsIcon />
+            </ListItemIcon>
+            <ListItemText primary="Subscriptions" />
+          </ListItemButton>
+
+          <ListItemButton
+            onClick={() => {
+              setDrawerOpen(false);
+              navigate(user ? "/profile" : "/login");
+            }}
+          >
+            <ListItemIcon sx={{ color: P.accent }}>
+              <AccountCircleIcon />
+            </ListItemIcon>
+            <ListItemText primary="You" />
+          </ListItemButton>
+
+          <ListItemButton
+            onClick={() => {
+              setDrawerOpen(false);
+              navigate("/history");
+            }}
+          >
+            <ListItemIcon sx={{ color: P.accent }}>
+              <HistoryIcon />
+            </ListItemIcon>
+            <ListItemText primary="History" />
+          </ListItemButton>
+
+          <ListItemButton
+            onClick={() => {
+              setDrawerOpen(false);
+              navigate("/settings");
+            }}
+          >
+            <ListItemIcon sx={{ color: P.accent }}>
+              <SettingsIcon />
+            </ListItemIcon>
+            <ListItemText primary="Settings" />
+          </ListItemButton>
+        </List>
+      </Box>
+    </Drawer>
+  </>
+);
 }
 
 function UpNextCard({ item, currentCategory }) {

@@ -605,7 +605,7 @@ function logout() {
   const [category, setCategory] = useState("");
 
   const categories = useMemo(
-    () => ["All", "Gaming", "Music", "Genshin Impact", "HTML", "News", "Podcasts", "Pop Rock","Minecraft","Cartoons","Animated Films","Memes","Honkai: Star Rail","Emocore","Car","Dance","Indie Games"],
+    () => ["All", "Gaming", "Music", "Genshin Impact", "HTML", "News", "Podcasts","Shorts", "Pop Rock","Minecraft","Cartoons","Animated Films","Memes","Honkai: Star Rail","Emocore","Car","Dance","Indie Games"],
     []
   );
 
@@ -669,75 +669,92 @@ const topVideos = normalVideos.slice(0, VIDEOS_BEFORE_SHORTS);
 const bottomVideos = normalVideos.slice(VIDEOS_BEFORE_SHORTS);
 
   const drawer = (
-  <Box sx={{ width: 270, bgcolor: P.surface, height: "100%", color: P.text }}>
-    {/* Top brand area */}
-    <Box sx={{ px: 2, py: 2, display: "flex", flexDirection: "column", gap: 1 }}>
-      <Link to="/" style={{ textDecoration: "none" }}>
-        <Typography
-          variant="h6"
-          sx={{
-            fontWeight: 900,
-            color: P.accent,
-            background: P.surface2,
-            px: 2,
-            py: 0.8,
-            borderRadius: 999,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 0.6,
-            width: "fit-content",
-          }}
-        >
-          🐱 MeowTube
-        </Typography>
-      </Link>
-
-      <Link to="/upload" style={{ textDecoration: "none" }}>
-        <Typography
-          sx={{
-            fontWeight: 700,
-            color: "#fff",
-            background: `linear-gradient(135deg, ${P.accent}, ${P.accent2})`,
-            px: 2,
-            py: 0.8,
-            borderRadius: 999,
-            boxShadow: "0 6px 16px rgba(255,127,176,0.25)",
-            width: "fit-content",
-          }}
-        >
-          Upload ✨
-        </Typography>
-      </Link>
-    </Box>
-
-    <Divider sx={{ borderColor: P.border }} />
-
+  <Box
+  sx={{
+    width: "100%",
+    bgcolor: P.surface2,
+    height: "100%",
+    color: P.text,
+    py: 2,
+    overflowY: "auto",
+  }}
+>
     {/* Menu items */}
     <List>
-  {sidebarItems.map((it) => (
-    <ListItemButton
-      key={it.label}
-      onClick={() => {
-        if (it.to) {
-          navigate(it.to);
-        } else {
-          it.action?.();
-        }
+      {sidebarItems.map((it) => (
+        <ListItemButton
+          key={it.label}
+          onClick={() => {
+            if (it.to) {
+              navigate(it.to);
+            } else {
+              it.action?.();
+            }
 
-        setDrawerOpen(false);
-      }}
-      sx={{
-        mx: 1,
-        my: 0.4,
-        borderRadius: 3,
-        "&:hover": { bgcolor: P.surface2 },
-      }}
-    >
-      <ListItemIcon sx={{ color: P.accent }}>{it.icon}</ListItemIcon>
-      <ListItemText primary={it.label} />
-    </ListItemButton>
-  ))}
-</List>
+            setDrawerOpen(false);
+          }}
+          sx={{
+            mx: 1,
+            my: 0.4,
+            borderRadius: 3,
+            "&:hover": { bgcolor: P.surface2 },
+          }}
+        >
+          <ListItemIcon sx={{ color: P.accent }}>{it.icon}</ListItemIcon>
+          <ListItemText
+            primary={it.label}
+            primaryTypographyProps={{
+              fontWeight: 700,
+            }}
+          />
+        </ListItemButton>
+      ))}
+    </List>
+
+    <Divider sx={{ my: 1.5, borderColor: P.border }} />
+
+    {/* Sign in panel - only shows if user is NOT logged in */}
+    {!user && (
+      <>
+        <Box sx={{ px: 3, py: 1.5 }}>
+          <Typography
+            sx={{
+              color: P.text,
+              fontWeight: 700,
+              lineHeight: 1.4,
+              mb: 2,
+            }}
+          >
+            Sign in to like videos, comment, and subscribe.
+          </Typography>
+
+          <Button
+            onClick={() => {
+              setDrawerOpen(false);
+              navigate("/login");
+            }}
+            variant="outlined"
+            startIcon={<AccountCircleIcon />}
+            sx={{
+              borderRadius: 999,
+              borderColor: P.border,
+              color: P.accent,
+              fontWeight: 800,
+              textTransform: "none",
+              px: 2,
+              "&:hover": {
+                borderColor: P.accent,
+                bgcolor: P.surface2,
+              },
+            }}
+          >
+            Sign in
+          </Button>
+        </Box>
+
+        <Divider sx={{ my: 1.5, borderColor: P.border }} />
+      </>
+    )}
   </Box>
 );
 
@@ -747,6 +764,7 @@ const bottomVideos = normalVideos.slice(VIDEOS_BEFORE_SHORTS);
      <AppBar
   position="fixed"
   sx={{
+    zIndex: 1400,
     bgcolor: "rgba(255, 255, 255, 0.86)",
     color: P.text,
     boxShadow: "none",
@@ -769,9 +787,12 @@ const bottomVideos = normalVideos.slice(VIDEOS_BEFORE_SHORTS);
 >
     {/* Left: menu + logo */}
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: P.text }}>
-        <MenuIcon />
-      </IconButton>
+      <IconButton
+  onClick={() => setDrawerOpen((prev) => !prev)}
+  sx={{ color: P.text }}
+>
+  <MenuIcon />
+</IconButton>
 
       <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
   <Box
@@ -1269,10 +1290,17 @@ const bottomVideos = normalVideos.slice(VIDEOS_BEFORE_SHORTS);
     </Box>
   </Link>
 
-  <Box sx={{ textAlign: "center", color: P.text }}>
-    <SlowMotionVideoIcon sx={{ color: P.accent }} />
-    <Typography sx={{ fontSize: 11 }}>Shorts</Typography>
-  </Box>
+  <Box
+  onClick={() => setCategory("Shorts")}
+  sx={{
+    textAlign: "center",
+    color: P.text,
+    cursor: "pointer",
+  }}
+>
+  <SlowMotionVideoIcon sx={{ color: P.accent }} />
+  <Typography sx={{ fontSize: 11 }}>Shorts</Typography>
+</Box>
 
   <Box
   onClick={() => navigate("/subscriptions")}
@@ -1282,21 +1310,33 @@ const bottomVideos = normalVideos.slice(VIDEOS_BEFORE_SHORTS);
   <Typography sx={{ fontSize: 11 }}>Subscriptions</Typography>
 </Box>
 
-  <Box sx={{ textAlign: "center", color: P.text }}>
-    <AccountCircleIcon sx={{ color: P.accent }} />
-    <Typography sx={{ fontSize: 11 }}>You</Typography>
-  </Box>
+  <Box
+  onClick={() => navigate(user ? "/profile" : "/login")}
+  sx={{
+    textAlign: "center",
+    color: P.text,
+    cursor: "pointer",
+  }}
+>
+  <AccountCircleIcon sx={{ color: P.accent }} />
+  <Typography sx={{ fontSize: 11 }}>You</Typography>
+</Box>
 </Box>
 
       {/* Sidebar */}
       <Drawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        variant="temporary"
-        PaperProps={{ sx: { bgcolor: P.surface, borderRight: `1px solid ${P.border}` } }}
-      >
-        {drawer}
-      </Drawer>
+  open={drawerOpen}
+  variant="persistent"
+  
+  ModalProps={{
+    keepMounted: true,
+    sx: {
+      zIndex: 1200,
+    },
+  }}
+>
+  {drawer}
+</Drawer>
 
       {/* Content */}
       <Box
