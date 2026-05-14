@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   AppBar,
@@ -558,6 +558,8 @@ function UpNextCard({ item, currentCategory }) {
 
 export default function Watch() {
   const { id } = useParams();
+  const viewedRef = useRef(new Set());
+
   const navigate = useNavigate();
 
   const token = getToken();
@@ -633,13 +635,17 @@ export default function Watch() {
       setSubscribed(false);
     }
 
-    // increment views
-    try {
-      const viewRes = await api.post(`/videos/${id}/view`);
-      setVideo((prev) =>
-        prev ? { ...prev, views: viewRes.data.views } : prev
-      );
-    } catch (_) {}
+    // increment views only once per video page load
+if (!viewedRef.current.has(id)) {
+  viewedRef.current.add(id);
+
+  try {
+    const viewRes = await api.post(`/videos/${id}/view`);
+    setVideo((prev) =>
+      prev ? { ...prev, views: viewRes.data.views } : prev
+    );
+  } catch (_) {}
+}
 
     // save to history
     if (tokenExists) {
